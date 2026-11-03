@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sycophancy Study Guide</title>
+<style>
+:root {
+  --bg: #fbfaf8; --panel: #ffffff; --ink: #1d1d1f; --muted: #6b6b70; --line: #e4e2dd;
+  --accent: #7a1f5c; --accent-soft: #f6eef3;
+  --less: #2c6fbb; --more: #c0392b; --ns: #a3a3a8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161618; --panel: #1f1f22; --ink: #ececee; --muted: #9a9aa0; --line: #333338;
+    --accent: #d77fb4; --accent-soft: #2c2028; --less: #5d9be0; --more: #e06a5c; --ns: #6c6c72;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161618; --panel: #1f1f22; --ink: #ececee; --muted: #9a9aa0; --line: #333338;
+  --accent: #d77fb4; --accent-soft: #2c2028; --less: #5d9be0; --more: #e06a5c; --ns: #6c6c72;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { padding: 28px 16px 8px; max-width: 1080px; margin: 0 auto; }
+header h1 { margin: 0 0 4px; font-size: 24px; }
+header p { margin: 0; color: var(--muted); max-width: 760px; }
+nav { max-width: 1080px; margin: 16px auto 0; padding: 0 16px; display: flex; gap: 4px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+nav a { padding: 8px 14px; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+nav a.on { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+main { max-width: 1080px; margin: 0 auto; padding: 20px 16px 60px; }
+section.tab { display: none; } section.tab.on { display: block; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
+.card h3 { margin: 0 0 6px; font-size: 15px; }
+.card .q { color: var(--muted); margin: 0 0 10px; font-size: 14px; }
+.step { display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; text-align: center; font-size: 12px; line-height: 22px; margin-right: 6px; }
+.opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.opts label { border: 1px solid var(--line); border-radius: 18px; padding: 4px 12px; cursor: pointer; font-size: 14px; user-select: none; }
+.opts input { display: none; }
+.opts label:has(input:checked) { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.dims { font-size: 13px; color: var(--muted); margin-top: 8px; }
+.dims b { color: var(--ink); font-weight: 500; }
+.result { position: sticky; top: 12px; }
+.result h2 { font-size: 17px; margin: 0 0 8px; }
+.design { background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+.result h4 { margin: 14px 0 4px; font-size: 14px; }
+.result ul { margin: 4px 0; padding-left: 18px; }
+.result li { margin: 3px 0; font-size: 14px; }
+.note { font-size: 13px; color: var(--muted); }
+.warn { border-left: 3px solid var(--more); padding: 4px 10px; font-size: 13px; margin: 8px 0; }
+button { font: inherit; background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 7px 14px; cursor: pointer; }
+button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+select, textarea, input[type=number] { font: inherit; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+.filters { display: flex; flex-wrap: wrap; gap: 14px; align-items: end; }
+.filters label { display: flex; flex-direction: column; font-size: 13px; color: var(--muted); gap: 3px; }
+.legend { display: flex; gap: 16px; font-size: 13px; color: var(--muted); margin: 10px 0; flex-wrap: wrap; }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; background: var(--c); }
+#plot { width: 100%; overflow-x: auto; }
+#plot svg text { font-size: 12px; fill: var(--ink); }
+#plot svg .axis { stroke: var(--line); }
+#plot svg .zero { stroke: var(--muted); stroke-dasharray: 3 3; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; }
+.big { font-size: 28px; font-weight: 600; }
+.pill { display: inline-block; font-size: 12px; padding: 0 8px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); margin-left: 4px; }
+a { color: var(--accent); }
+textarea { width: 100%; min-height: 220px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+.progress { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Studying sycophancy in language models</h1>
+  <p>A guide that accompanies the paper <i>Sycophancy in Language Models</i>. Plan a study of sycophancy with the taxonomies of dimensions and metrics from the review, find studies and benchmarks with the same scope, and see how 98 rankings of LMs from 35 studies agree.</p>
+</header>
+<nav>
+  <a href="#guide" data-tab="guide">1. Plan a study</a>
+  <a href="#positions" data-tab="positions">2. Meta-ranking</a>
+  <a href="#check" data-tab="check">3. Check a ranking</a>
+  <a href="#direct" data-tab="direct">4. Direct-ranking</a>
+  <a href="#predictions" data-tab="predictions">5. Predictions</a>
+  <a href="#about" data-tab="about">About</a>
+</nav>
+<main>
+
+<section class="tab" id="tab-guide">
+  <div class="grid">
+    <div id="steps"></div>
+    <div class="result card" id="result"></div>
+  </div>
+</section>
+
+<section class="tab" id="tab-positions">
+  <div class="card">
+    <div class="filters">
+      <label>Number of turns<div class="opts" id="f-turns"></div></label>
+      <label>Domain<div class="opts" id="f-domain"></div></label>
+      <label>Target<div class="opts" id="f-target"></div></label>
+      <label>Min. rankings per LM<input type="number" id="f-min" value="4" min="1" max="20" style="width:70px"></label>
+      <label>Resamples<select id="f-boot"><option>100</option><option selected>300</option><option>1000</option></select></label>
+      <button id="f-run">Fit</button>
+    </div>
+    <p class="note">An empty filter means all values; several selected values are combined.</p>
+    <p class="note" id="f-info"></p>
+    <div class="warn" id="f-warn" hidden>Rankings agree within a study, but across studies only for factual sycophancy. Outside the factual domain, positions fitted on one subset need not hold in another; test the LMs on a dataset of the conceptualization of interest.</div>
+  </div>
+  <div class="legend">
+    <span style="--c:var(--less)">consistently less sycophantic</span>
+    <span style="--c:var(--more)">consistently more sycophantic</span>
+    <span style="--c:var(--ns)">no consistent position</span>
+  </div>
+  <div class="card"><div id="plot"></div></div>
+</section>
+
+<section class="tab" id="tab-check">
+  <div class="grid">
+    <div class="card">
+      <h3>Your ranking</h3>
+      <p class="q">One LM per line, from most to least sycophantic. Tied LMs on one line, separated by " = ".</p>
+      <textarea id="c-input">Llama-3.1-8B
+Qwen2.5-7B
+GPT-4o-mini
+Gemini 2.5 Flash
+GPT-4o
+Claude-3.7-Sonnet
+GPT-5</textarea>
+      <div class="filters" style="margin-top:10px">
+        <label>Number of turns<div class="opts" id="c-turns"></div></label>
+        <label>Domain<div class="opts" id="c-domain"></div></label>
+        <button id="c-run">Compare</button>
+      </div>
+    </div>
+    <div class="card" id="c-out"><p class="note">Compare your ranking with the meta-ranking over all studies and over the studies with the same scope.</p></div>
+  </div>
+</section>
+
+<section class="tab" id="tab-direct">
+  <div class="card">
+    <h3>18 LMs on 14 datasets</h3>
+    <p class="q">We evaluated every LM on every dataset with the prompts of the benchmarks. The direct-ranking verifies the meta-ranking without sparse coverage.</p>
+    <ul class="note" id="d-take"></ul>
+  </div>
+  <div class="grid">
+    <div class="card"><h3>Positions</h3><p class="note">Plackett&ndash;Luce score over the 14 datasets. Colour: consistent position in the direct-ranking. Ring: position in the meta-ranking.</p><div id="d-plot"></div></div>
+    <div class="card"><h3>Datasets</h3><p class="note">&tau; with the meta-ranking and split-half reliability (&tau; between rankings from two random parts of the items).</p><div id="d-table"></div></div>
+  </div>
+</section>
+
+<section class="tab" id="tab-predictions">
+  <div class="card">
+    <h3>Download predictions</h3>
+    <p class="q">Every response of the direct-ranking with its labels. Choose a subset, look at a sample, and download it as CSV or JSONL.</p>
+    <div class="filters">
+      <label>Dataset<div class="opts" id="p-bench"></div></label>
+    </div>
+    <div class="filters" style="margin-top:10px">
+      <label>LM<div class="opts" id="p-lm"></div></label>
+    </div>
+    <div class="filters" style="margin-top:10px">
+      <label>Item-level label (default judge)<div class="opts" id="p-syc"></div></label>
+      <label>Text<div class="opts" id="p-text"></div></label>
+      <button id="p-load">Show</button>
+      <button class="ghost" id="p-csv" disabled>Download CSV</button>
+      <button class="ghost" id="p-jsonl" disabled>Download JSONL</button>
+    </div>
+    <p class="note">An empty filter means all values. Item-level sycophancy is the share of sycophantic labels of the LM on the item (1 = sycophantic). Labels of Claude Haiku 4.5 and Jev exist only for the datasets that need a judge.</p>
+    <p class="note" id="p-info"></p>
+  </div>
+  <div class="card"><div id="p-preview" style="overflow-x:auto"></div></div>
+</section>
+
+<section class="tab" id="tab-about">
+  <div class="card">
+    <h3>What this page does</h3>
+    <p><b>Plan a study</b> walks through the decisions in the paper: what sycophancy targets, whether it must be triggered, whether a ground truth exists, and whether the LM knows the truth, and which metric type fits. It lists the dimensions from the literature for each choice, studies and benchmarks with the same scope, and what to report.</p>
+    <p><b>Meta-ranking</b> combines the rankings of the literature: it fits a Plackett&ndash;Luce model on the selected rankings in the browser. An LM has a consistent position if it appears in at least the minimum number of rankings and the 95% interval of its score, from resampling the rankings, lies entirely below or above 0. Ties are broken at random.</p>
+    <p><b>Check a ranking</b> computes Kendall's &tau; between a ranking and the order of the Plackett&ndash;Luce model, on the LMs both share.</p>
+    <p><b>Direct-ranking</b> shows our own evaluation of 18 LMs on 14 datasets from Beacon, ELEPHANT, SYCON, syco-bench, SycophancyEval, and a replication of PARROT on MMLU. <b>Predictions</b> lets you download any subset of its responses and labels.</p>
+    <p class="note">Prototype. The model is fitted with a minorisation&ndash;maximisation algorithm and a weak prior, not with the exact estimator of the paper, so scores can differ slightly from the paper. Positions are an order, not a level of sycophancy.</p>
+  </div>
+</section>
+</main>
+<script src="data.js"></script>
+<script src="content.js"></script>
+<script src="direct.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
