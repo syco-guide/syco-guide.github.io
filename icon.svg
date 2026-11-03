@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Sycophancy study guide">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5f6dff"/>
+      <stop offset="1" stop-color="#e5508a"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="62" fill="url(#g)"/>
+  <!-- devil horns -->
+  <path d="M38 44 C33 32 34 24 40 18 C41 28 46 34 52 38 Z" fill="#fff"/>
+  <path d="M90 44 C95 32 94 24 88 18 C87 28 82 34 76 38 Z" fill="#fff"/>
+  <!-- the LM: a robot head that agrees with everything -->
+  <rect x="30" y="38" width="68" height="56" rx="16" fill="#fff"/>
+  <!-- eyes, narrowed into a sly smile -->
+  <g fill="none" stroke="#7a5fd6" stroke-width="5" stroke-linecap="round">
+    <path d="M42 60 q7 -7 14 0"/>
+    <path d="M72 60 q7 -7 14 0"/>
+  </g>
+  <!-- wide, eager grin -->
+  <path d="M44 72 q20 16 40 0" fill="none" stroke="#c4579f" stroke-width="5" stroke-linecap="round"/>
+  <!-- devil tail -->
+  <path d="M98 82 c12 2 14 12 8 18" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <path d="M100 96 l9 7 l-11 2 z" fill="#fff"/>
+</svg>

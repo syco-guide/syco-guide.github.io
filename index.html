@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sycophancy Study Guide</title>
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
 <style>
 :root {
   --bg: #fbfaf8; --panel: #ffffff; --ink: #1d1d1f; --muted: #6b6b70; --line: #e4e2dd;
@@ -23,7 +25,8 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
 header { padding: 28px 16px 8px; max-width: 1080px; margin: 0 auto; }
-header h1 { margin: 0 0 4px; font-size: 24px; }
+header h1 { margin: 0 0 4px; font-size: 24px; display: flex; align-items: center; gap: 12px; }
+header h1 img { width: 44px; height: 44px; flex: none; }
 header p { margin: 0; color: var(--muted); max-width: 760px; }
 nav { max-width: 1080px; margin: 16px auto 0; padding: 0 16px; display: flex; gap: 4px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 nav a { padding: 8px 14px; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -1px; }
@@ -73,7 +76,7 @@ textarea { width: 100%; min-height: 220px; font-family: ui-monospace, Menlo, mon
 </head>
 <body>
 <header>
-  <h1>Studying sycophancy in language models</h1>
+  <h1><img src="icon.svg" alt="">Studying sycophancy in language models</h1>
   <p>A guide that accompanies the paper <i>Sycophancy in Language Models</i>. Plan a study of sycophancy with the taxonomies of dimensions and metrics from the review, find studies and benchmarks with the same scope, and see how 98 rankings of LMs from 35 studies agree.</p>
 </header>
 <nav>
