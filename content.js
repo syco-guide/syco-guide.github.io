@@ -16,8 +16,8 @@ window.CONTENT = {
              ["Intersectional", "Maltbie et al. (2026)"]] },
   },
   triggers: {
-    multi: { label: "after the user pushes back", dims: [["Reactive", "Turner et al. (2026)"], ["Type-1", "Beigi et al. (2025)"], ["Medical", "Ping et al. (2026)"]] },
-    single: { label: "without pushback", dims: [["Proactive", "Turner et al. (2026)"], ["Type-2", "Beigi et al. (2025)"], ["Evasive", "Li et al. (2026)"], ["Covert", "Wang et al. (2026)"]] },
+    reactive: { label: "that react to a cue from the user", dims: [["Reactive", "Turner et al. (2026)"], ["Type-1", "Beigi et al. (2025)"], ["Medical", "Ping et al. (2026)"]] },
+    proactive: { label: "without a cue from the user", dims: [["Proactive", "Turner et al. (2026)"], ["Type-2", "Beigi et al. (2025)"], ["Evasive", "Li et al. (2026)"], ["Covert", "Wang et al. (2026)"]] },
   },
   truth: {
     knows: [["Dishonest/Factual", "Panickssery et al. (2023)"], ["Type-2", "Beigi et al. (2025)"], ["Pure", "Guo et al. (2026)"], ["Citation", "Molfetta et al. (2026)"]],

@@ -104,22 +104,24 @@ window.addEventListener("hashchange", showTab);
 // ------------------------------------------------------------------ 1. guide
 // every step allows several answers; at least one stays selected
 const STEPS = [
-  { key: "target", title: "What does the sycophancy target?", q: "The first axis of the taxonomy: what the behaviour is directed at.",
+  { stage: "Conceptualise", key: "target", title: "What does the sycophancy target?", q: "The first axis of the taxonomy: what the behaviour is directed at.",
     opts: Object.entries(C.targets).map(([k, v]) => [k, v.label]) },
-  { key: "trigger", title: "Does it have to be triggered?", q: "Does the user push back after the LM's first answer (multi-turn), or is the user's view already in the prompt (single-turn)?",
-    opts: [["single", "no, view in the prompt"], ["multi", "yes, user pushes back"]] },
-  { key: "format", title: "Question format", q: "Fixed answer options give a clear ground truth but resemble real use less; open-ended answers need a judge or rubric.",
-    opts: [["MCQ", "multiple choice"], ["OE", "open-ended"]] },
-  { key: "gt", title: "Is there a ground truth?", q: "A known correct answer against which responses are scored.",
-    opts: [["yes", "yes"], ["no", "no"]] },
-  { key: "knows", title: "Does the LM know the truth?", q: "The third axis: some definitions require that the LM knows the truth, some describe an LM that does not know it (or there is none), and some leave it unspecified.",
+  { stage: "Conceptualise", key: "trigger", title: "Does it have to be triggered?", q: "The second axis of the taxonomy: whether the sycophancy reacts to a cue from the user, such as a stated view or pushback, or appears without one.",
+    opts: [["reactive", "yes, by a cue from the user"], ["proactive", "no, without a cue"]] },
+  { stage: "Conceptualise", key: "knows", title: "Does the LM know the truth?", q: "The third axis: some definitions require that the LM knows the truth, some describe an LM that does not know it (or there is none), and some leave it unspecified.",
     opts: [["knows", "it knows"], ["unknown", "it does not know"], ["unspecified", "not specified"]] },
-  { key: "compare", title: "Do you compare responses?", q: "Standalone metrics judge each response on its own; comparative metrics compare at least two responses, e.g. with and without the user's view.",
-    opts: [["standalone", "no, single response"], ["comparative", "yes, two or more"]] },
-  { key: "domain", title: "Domain", q: "The domain of the rankings and benchmarks to compare with.",
+  { stage: "Operationalise", key: "turns", title: "Number of turns", q: "An operationalisation choice, separate from the trigger: the user's cue can be in the first prompt (single-turn) or come after the LM's first answer (multi-turn).",
+    opts: [["single", "single-turn"], ["multi", "multi-turn"]] },
+  { stage: "Operationalise", key: "format", title: "Question format", q: "Fixed answer options give a clear ground truth but resemble real use less; open-ended answers need a judge or rubric.",
+    opts: [["MCQ", "multiple choice"], ["OE", "open-ended"]] },
+  { stage: "Operationalise", key: "domain", title: "Domain", q: "The domain of the rankings and benchmarks to compare with.",
     opts: DOMAINS.map(d => [d, d]) },
+  { stage: "Measure", key: "gt", title: "Is there a ground truth?", q: "A known correct answer against which responses are scored.",
+    opts: [["yes", "yes"], ["no", "no"]] },
+  { stage: "Measure", key: "compare", title: "Do you compare responses?", q: "Standalone metrics judge each response on its own; comparative metrics compare at least two responses, e.g. with and without the user's view.",
+    opts: [["standalone", "no, single response"], ["comparative", "yes, two or more"]] },
 ];
-const choice = { target: ["facts"], trigger: ["multi"], format: ["OE"], gt: ["yes"], knows: ["unspecified"], compare: ["comparative"], domain: ["factual"] };
+const choice = { target: ["facts"], trigger: ["reactive"], turns: ["multi"], format: ["OE"], gt: ["yes"], knows: ["unspecified"], compare: ["comparative"], domain: ["factual"] };
 const has = (k, v) => choice[k].includes(v);
 
 function dimList(dims) { return dims.map(([n, r]) => `<b>${esc(n)}</b> (${esc(r)})`).join(", "); }
@@ -131,12 +133,18 @@ const KNOWS_TEXT = {
 };
 
 function renderSteps() {
+  const STAGE_Q = {
+    Conceptualise: "What counts as sycophancy, and what does not? State explicitly whether your definition requires a stated user opinion, pushback from the user, that the LM knows the ground truth and abandons it, or flattery of the user.",
+    Operationalise: "How is sycophancy elicited, and in which LMs?",
+    Measure: "How is sycophancy scored?",
+  };
   $("#steps").innerHTML = STEPS.map((s, k) => {
+    const head = k === 0 || STEPS[k - 1].stage !== s.stage ? `<h2 class="stage">${esc(s.stage)}</h2><p class="q">${esc(STAGE_Q[s.stage])}</p>` : "";
     let extra = [];
     if (s.key === "target") extra = choice.target.map(t => `${esc(C.targets[t].label)}: ${esc(C.targets[t].help)}. Dimensions: ${dimList(C.targets[t].dims)}`);
     if (s.key === "trigger") extra = choice.trigger.map(t => `Dimensions ${esc(C.triggers[t].label)}: ${dimList(C.triggers[t].dims)}`);
     if (s.key === "knows") extra = choice.knows.map(t => KNOWS_TEXT[t]());
-    return `<div class="card"><h3><span class="step">${k + 1}</span>${esc(s.title)}</h3><p class="q">${esc(s.q)} <span class="note">Select one or more.</span></p>
+    return head + `<div class="card"><h3><span class="step">${k + 1}</span>${esc(s.title)}</h3><p class="q">${esc(s.q)} <span class="note">Select one or more.</span></p>
       <div class="opts">${s.opts.map(([v, l]) => `<label><input type="checkbox" name="${s.key}" value="${esc(v)}" ${has(s.key, v) ? "checked" : ""}>${esc(l)}</label>`).join("")}</div>
       ${extra.map(e => `<div class="dims">${e}</div>`).join("")}</div>`;
   }).join("");
@@ -149,12 +157,12 @@ function renderSteps() {
 
 function renderResult() {
   const ch = choice;
-  const turns = ch.trigger.map(t => t + "-turn");
+  const turns = ch.turns.map(t => t + "-turn");
   const combos = ch.compare.flatMap(c => ch.gt.map(g => [c, g]));
   const scopeRs = select(D.rankings, { turns, domain: ch.domain });
-  const benches = C.benchmarks.filter(b => b.domains.some(d => ch.domain.includes(d)) && (b.turns === "both" || ch.trigger.includes(b.turns)));
+  const benches = C.benchmarks.filter(b => b.domains.some(d => ch.domain.includes(d)) && (b.turns === "both" || ch.turns.includes(b.turns)));
   const sameFormat = b => b.format === "Both" || ch.format.includes(b.format);
-  const several = ch.trigger.length > 1 || ch.format.length > 1 || combos.length > 1 || ch.domain.length > 1 || ch.target.length > 1;
+  const several = ch.turns.length > 1 || ch.format.length > 1 || combos.length > 1 || ch.domain.length > 1 || ch.target.length > 1;
   const checks = [
     "Report the full ranking of LMs, not only the most and least sycophantic one.",
     "Report the number of turns, the question format, and how the metric is computed" + (several ? ", and report results separately for each setting, since rankings from one setting need not hold in another." : "."),
@@ -162,7 +170,11 @@ function renderResult() {
     has("knows", "knows") ? "Measure what the LM knows, e.g. its certainty in the first answer or its internal states; correctness of an answer does not imply knowledge of it." : null,
     has("knows", "unknown") ? "Report how uncertain the LM is; agreement that grows with uncertainty is uncertainty-driven conformity rather than sycophancy on some accounts." : null,
     has("knows", "unspecified") ? "State that the design does not separate sycophancy from genuine agreement and uncertainty-driven conformity." : null,
-    "Include LMs that many studies rank, so that your ranking can be compared with the literature.",
+    "Compare every prompt with a stance against a neutral baseline in the same format.",
+    "Use about 100 items or more; datasets with 40 or fewer items rank LMs unreliably.",
+    "Include reference LMs from both ends of the meta-ranking, e.g. GPT-5 or Claude Sonnet 4.6 and Gemma 3 4B or Qwen2.5 7B, so that new results can be placed.",
+    "Score with an LM judge, string match, or log-probs; for open-ended data, use more than one judge, as judges can disagree.",
+    "Claim that one LM is less sycophantic than another only for a clear difference pooled over several datasets.",
   ].filter(Boolean);
 
   let refs = "<span class='progress'>computing&hellip;</span>";
@@ -188,7 +200,7 @@ function renderResult() {
     <p><span class="big">${scopeRs.length}</span> rankings from ${studies(scopeRs)} studies ${scopeRs.length ? `<button class="ghost" id="to-pos">See the meta-ranking</button>` : ""}</p>
     <h4>What to report</h4>
     <ul>${checks.map(c => `<li>${esc(c)}</li>`).join("")}</ul>
-    <p class="note">LMs with a consistent position that many studies rank: ${refs}</p>`;
+    <p class="note">LMs with a consistent position in many rankings, as candidates for reference LMs: ${refs}</p>`;
   const btn = $("#to-pos");
   if (btn) btn.onclick = () => { setChips($("#f-turns"), turns); setChips($("#f-domain"), ch.domain); setChips($("#f-target"), []); location.hash = "#positions"; runPositions(); };
 }
@@ -233,11 +245,19 @@ async function runPositions() {
 }
 
 // ------------------------------------------------------------------ 3. check a ranking
+// names match case-insensitively and ignoring spaces, hyphens and underscores,
+// so "Qwen2.5 7B" and "Qwen2.5-7B" are the same LM
+const squash = s => s.trim().toLowerCase().replace(/[\s_-]+/g, "");
+let SQUASHED = null;
 function resolveName(s) {
   const k = s.trim().toLowerCase();
   if (D.names[k]) return D.names[k];
-  const hit = MODELS.find(m => m.toLowerCase() === k);
-  return hit || null;
+  if (!SQUASHED) {
+    SQUASHED = {};
+    MODELS.forEach(m => SQUASHED[squash(m)] = m);
+    Object.entries(D.names).forEach(([a, m]) => SQUASHED[squash(a)] ??= m);
+  }
+  return MODELS.find(m => m.toLowerCase() === k) || SQUASHED[squash(s)] || null;
 }
 
 async function runCheck() {
@@ -296,8 +316,8 @@ function renderDirect() {
   $("#d-plot").innerHTML = s;
   const ds = Object.entries(X.datasets).sort((a, b) => (b[1].tau_meta ?? -9) - (a[1].tau_meta ?? -9));
   const f = v => v == null ? "–" : v.toFixed(2);
-  $("#d-table").innerHTML = `<table><tr><th>dataset</th><th>domain</th><th>items</th><th>τ meta</th><th>split-half</th></tr>
-    ${ds.map(([k, d]) => `<tr><td>${esc(DS_NAME[k] || k)}</td><td>${esc(d.domain)}</td><td>${d.items}</td><td>${f(d.tau_meta)}</td><td>${f(d.split_half)}</td></tr>`).join("")}</table>`;
+  $("#d-table").innerHTML = `<table><tr><th>dataset</th><th>domain</th><th>items (scored)</th><th>τ meta</th><th>split-half</th></tr>
+    ${ds.map(([k, d]) => `<tr><td>${esc(DS_NAME[k] || k)}</td><td>${esc(d.domain)}</td><td>${d.items}${d.scored && d.scored !== d.items ? ` (${d.scored})` : ""}</td><td>${f(d.tau_meta)}</td><td>${f(d.split_half)}</td></tr>`).join("")}</table>`;
 }
 
 // ------------------------------------------------------------------ 5. predictions

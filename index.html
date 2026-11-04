@@ -39,6 +39,7 @@ section.tab { display: none; } section.tab.on { display: block; }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
 .card h3 { margin: 0 0 6px; font-size: 15px; }
 .card .q { color: var(--muted); margin: 0 0 10px; font-size: 14px; }
+.stage { font-size: 15px; margin: 18px 0 2px; color: var(--accent); }
 .step { display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; text-align: center; font-size: 12px; line-height: 22px; margin-right: 6px; }
 .opts { display: flex; flex-wrap: wrap; gap: 6px; }
 .opts label { border: 1px solid var(--line); border-radius: 18px; padding: 4px 12px; cursor: pointer; font-size: 14px; user-select: none; }
@@ -78,7 +79,7 @@ textarea { width: 100%; min-height: 220px; font-family: ui-monospace, Menlo, mon
 <body>
 <header>
   <h1><img src="icon.svg" alt="">Studying sycophancy in language models</h1>
-  <p>A guide that accompanies the paper <i>Sycophancy in Language Models</i>. Plan a study of sycophancy with the taxonomies of dimensions and metrics from the review, find studies and benchmarks with the same scope, and see how 98 rankings of LMs from 35 studies agree.</p>
+  <p>A guide that accompanies the paper <i>Theme and Variations of Sycophancy in Language Model Research</i>. Plan a study of sycophancy in the steps of the paper: conceptualise what counts as sycophancy with the taxonomy of dimensions, operationalise how it is elicited, and choose how it is measured with the taxonomy of metrics; find studies and benchmarks with the same scope, and see how 98 rankings of LMs from 35 studies agree.</p>
 </header>
 <nav>
   <a href="#guide" data-tab="guide">1. Plan a study</a>
@@ -104,12 +105,12 @@ textarea { width: 100%; min-height: 220px; font-family: ui-monospace, Menlo, mon
       <label>Domain<div class="opts" id="f-domain"></div></label>
       <label>Target<div class="opts" id="f-target"></div></label>
       <label>Min. rankings per LM<input type="number" id="f-min" value="4" min="1" max="20" style="width:70px"></label>
-      <label>Resamples<select id="f-boot"><option>100</option><option selected>300</option><option>1000</option></select></label>
+      <label>Resamples<select id="f-boot"><option>100</option><option>300</option><option selected>1000</option></select></label>
       <button id="f-run">Fit</button>
     </div>
     <p class="note">An empty filter means all values; several selected values are combined.</p>
     <p class="note" id="f-info"></p>
-    <div class="warn" id="f-warn" hidden>Rankings agree within a study, but across studies only for factual sycophancy. Outside the factual domain, positions fitted on one subset need not hold in another; test the LMs on a dataset of the conceptualization of interest.</div>
+    <div class="warn" id="f-warn" hidden>Rankings agree within a study, but across studies only for factual sycophancy. Outside the factual domain, positions fitted on one subset need not hold in another; test the LMs on a dataset of the conceptualisation of interest.</div>
   </div>
   <div class="legend">
     <span style="--c:var(--less)">consistently less sycophantic</span>
@@ -144,7 +145,7 @@ GPT-5</textarea>
 <section class="tab" id="tab-direct">
   <div class="card">
     <h3>18 LMs on 14 datasets</h3>
-    <p class="q">We evaluated every LM on every dataset with the prompts of the benchmarks. The direct-ranking verifies the meta-ranking without sparse coverage.</p>
+    <p class="q">We evaluated every LM on every dataset with the prompts of the benchmarks. The direct ranking checks the meta-ranking on data without sparse coverage.</p>
     <ul class="note" id="d-take"></ul>
   </div>
   <div class="grid">
