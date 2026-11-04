@@ -288,15 +288,30 @@ async function runCheck() {
       Object.entries(d.scores).forEach(([lm, s]) => { sum[lm] = (sum[lm] || 0) + (s - mu) / sd; cnt[lm] = (cnt[lm] || 0) + 1; }); });
     dSc = compare(dTh(Object.fromEntries(Object.keys(sum).map(lm => [lm, sum[lm] / cnt[lm]]))));
   }
+  // single entries of the scope: every literature ranking and every dataset with at least 3 shared LMs
+  const scoped = f.turns.length || f.domain.length;
+  const asTh = pairs => { const out = new Float64Array(MODELS.length).fill(NaN); pairs.forEach(([m, v]) => { if (m && IDX[m] !== undefined) out[IDX[m]] = v; }); return out; };
+  const metaSingles = (scoped ? scope : D.rankings).map(r => ({ label: r.study + (r.subtest ? ", " + r.subtest : ""), url: r.url, ...compare(asTh(r.order.map(([m, v]) => [m, -v]))) })).filter(x => x.n >= 3);
+  const dSingle = Object.entries(DR.datasets).filter(([, d]) => !scoped || dSets.includes(d))
+    .map(([k, d]) => ({ label: DS_NAME[k] || k, ...compare(asTh(Object.entries(d.scores).map(([lm, s]) => [resolveName(lm), s]))) })).filter(x => x.n >= 3);
+  const singles = (title, xs, unit) => {
+    if (!xs.length) return `<p class="note">No single ${unit} shares 3 or more LMs with your ranking.</p>`;
+    const ok = xs.filter(x => !isNaN(x.tau)), med = ok.map(x => x.tau).sort((a, b) => a - b)[Math.floor(ok.length / 2)];
+    return `<details><summary>${esc(title)}: ${xs.length} ${unit}s with 3 or more shared LMs, median τ ${ok.length ? med.toFixed(2) : "–"}</summary>
+      <table><tr><th>${unit}</th><th>shared LMs</th><th>Kendall's τ</th></tr>
+      ${xs.sort((a, b) => b.tau - a.tau).map(x => `<tr><td>${x.url ? `<a href="${esc(x.url)}" target="_blank">${esc(x.label)}</a>` : esc(x.label)}</td><td>${x.n}</td><td>${isNaN(x.tau) ? "–" : x.tau.toFixed(2)}</td></tr>`).join("")}</table></details>`;
+  };
   const row = (label, r, nr) => `<tr><td>${label}</td><td>${nr}</td><td>${r.n}</td><td><b>${isNaN(r.tau) ? "–" : r.tau.toFixed(2)}</b></td></tr>`;
   $("#c-out").innerHTML = `<h3>Agreement with the meta-ranking</h3>
     <table><tr><th>meta-ranking fitted on</th><th>rankings</th><th>shared LMs</th><th>Kendall's τ</th></tr>
     ${row("all studies", all, D.rankings.length)}
     ${sc ? row("same scope", sc, scope.length) : ""}</table>
+    ${singles(scoped ? "Single rankings of the same scope" : "Single rankings", metaSingles, "ranking")}
     <h3>Agreement with the direct ranking</h3>
     <table><tr><th>direct ranking on</th><th>datasets</th><th>shared LMs</th><th>Kendall's τ</th></tr>
     ${row("all datasets", dAll, Object.keys(DR.datasets).length)}
     ${dSc ? row("same scope", dSc, dSets.length) : ""}</table>
+    ${singles(scoped ? "Single datasets of the same scope" : "Single datasets", dSingle, "dataset")}
     <p class="note">The direct ranking covers ${DR.lms.length} LMs. For a scope, LMs are ordered by their mean standardised score over the datasets of that scope.</p>
     <p class="note">τ = 1: same order, 0: unrelated, −1: reversed. (1+τ)/2 is the share of LM pairs in the same order. With few shared LMs, τ is uncertain.</p>
     ${unknown.length ? `<div class="warn">Not found in the rankings: ${unknown.map(esc).join(", ")}</div>` : ""}
