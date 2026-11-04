@@ -275,11 +275,29 @@ async function runCheck() {
   };
   const fullTh = new Float64Array(MODELS.length).fill(NaN); FULL.forEach(x => fullTh[IDX[x.model]] = x.theta);
   const all = compare(fullTh), sc = scopeFit ? compare(scopeFit) : null;
+  // direct ranking: pooled positions, and for a scope the mean z-score over the matching datasets
+  const DR = window.DIRECT, dTh = th => { const out = new Float64Array(MODELS.length).fill(NaN);
+    Object.entries(th).forEach(([lm, v]) => { const m = resolveName(lm); if (m && IDX[m] !== undefined) out[IDX[m]] = v; }); return out; };
+  const dAll = compare(dTh(Object.fromEntries(DR.lms.map(l => [l.lm, l.theta]))));
+  const dSets = Object.values(DR.datasets).filter(d => (!f.turns.length || f.turns.includes(d.turns + "-turn")) && (!f.domain.length || f.domain.includes(d.domain)));
+  let dSc = null;
+  if ((f.turns.length || f.domain.length) && dSets.length) {
+    const sum = {}, cnt = {};
+    dSets.forEach(d => { const v = Object.values(d.scores), mu = v.reduce((a, b) => a + b, 0) / v.length,
+      sd = Math.sqrt(v.reduce((a, b) => a + (b - mu) ** 2, 0) / v.length) || 1;
+      Object.entries(d.scores).forEach(([lm, s]) => { sum[lm] = (sum[lm] || 0) + (s - mu) / sd; cnt[lm] = (cnt[lm] || 0) + 1; }); });
+    dSc = compare(dTh(Object.fromEntries(Object.keys(sum).map(lm => [lm, sum[lm] / cnt[lm]]))));
+  }
   const row = (label, r, nr) => `<tr><td>${label}</td><td>${nr}</td><td>${r.n}</td><td><b>${isNaN(r.tau) ? "–" : r.tau.toFixed(2)}</b></td></tr>`;
   $("#c-out").innerHTML = `<h3>Agreement with the meta-ranking</h3>
     <table><tr><th>meta-ranking fitted on</th><th>rankings</th><th>shared LMs</th><th>Kendall's τ</th></tr>
     ${row("all studies", all, D.rankings.length)}
     ${sc ? row("same scope", sc, scope.length) : ""}</table>
+    <h3>Agreement with the direct ranking</h3>
+    <table><tr><th>direct ranking on</th><th>datasets</th><th>shared LMs</th><th>Kendall's τ</th></tr>
+    ${row("all datasets", dAll, Object.keys(DR.datasets).length)}
+    ${dSc ? row("same scope", dSc, dSets.length) : ""}</table>
+    <p class="note">The direct ranking covers ${DR.lms.length} LMs. For a scope, LMs are ordered by their mean standardised score over the datasets of that scope.</p>
     <p class="note">τ = 1: same order, 0: unrelated, −1: reversed. (1+τ)/2 is the share of LM pairs in the same order. With few shared LMs, τ is uncertain.</p>
     ${unknown.length ? `<div class="warn">Not found in the rankings: ${unknown.map(esc).join(", ")}</div>` : ""}
     <p class="note">Matched: ${Object.keys(mine).map(esc).join(", ")}</p>`;
